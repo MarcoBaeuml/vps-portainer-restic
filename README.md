@@ -189,23 +189,60 @@ docker compose -f ./restic/docker-compose.yml exec restic-backup restic snapshot
 
 Choose the snapshot you want to restore (usually the most recent one).
 
-#### 3. **Restore all data directly to the data folder**
+#### 3. **Temporarily remove read-only flag from data volume**
+
+Edit `restic/docker-compose.yml` and remove the `:ro` (read-only) flag from the data volume mount:
+
+```yaml
+volumes:
+  # Change from:
+  - /root/docker/portainer/data:/data:ro
+  # To:
+  - /root/docker/portainer/data:/data
+```
+
+Then restart the container:
+```bash
+docker compose -f ./restic/docker-compose.yml up -d --force-recreate
+```
+
+**Why?** The read-only flag prevents Restic from writing the restored data to the `/data` directory.
+
+#### 4. **Restore all data directly to the data folder**
 ```bash
 docker compose -f ./restic/docker-compose.yml exec restic-backup restic restore <snapshot-id>:/data --target /data
 ```
 
 This restores the entire backup directly to the `/data/` path in the container, which maps to `/root/docker/portainer/data/` on your host.
 
-#### 4. **Restart Portainer and verify**
+#### 5. **Restart Portainer and verify**
 ```bash
 docker compose -f ./portainer/docker-compose.yml up -d --force-recreate
 ```
 
 Access Portainer at `http://your-server-ip:9443` and verify your containers are restored.
 
-#### 5. **Restart your application containers**
+#### 6. **Restart your application containers**
 - Go to Portainer UI and start/recreate your containers to ensure they use the restored data
 
+#### 7. **Re-enable read-only flag for security**
+
+Edit `restic/docker-compose.yml` and add back the `:ro` (read-only) flag:
+
+```yaml
+volumes:
+  # Change from:
+  - /root/docker/portainer/data:/data
+  # To:
+  - /root/docker/portainer/data:/data:ro
+```
+
+Then restart the container:
+```bash
+docker compose -f ./restic/docker-compose.yml up -d --force-recreate
+```
+
+**Important:** This prevents the backup container from accidentally modifying your production data during future backup operations.
 
 ## Security Considerations
 
