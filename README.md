@@ -42,14 +42,14 @@ docker/
 
 ## Installation
 
-#### 1. **Clone this repository**
+1. **Clone this repository**
 
-#### 2. **Make the notification script executable (optional)**:
+2. **Make the notification script executable (optional)**:
 ```bash
 chmod +x ./restic/notify.sh
 ```
 
-#### 3. **Configure Restic backup settings**:
+3. **Configure Restic backup settings**:
 ```bash
 cp ./restic/.env.example ./restic/.env
 ```
@@ -66,7 +66,7 @@ Edit the following variables:
 - `TELEGRAM_BOT_TOKEN`: (Optional) For backup notifications - leave as is to disable
 - `TELEGRAM_CHAT_ID`: (Optional) Your Telegram chat ID - leave as is to disable
 
-#### 4. **Start services**:
+4. **Start services**:
 ```bash
 # Start Portainer first
 docker compose -f ./portainer/docker-compose.yml up -d
@@ -75,8 +75,8 @@ docker compose -f ./portainer/docker-compose.yml up -d
 docker compose -f ./restic/docker-compose.yml up -d
 ```
 
-#### 5. **Access Portainer**:
-- Open `http://your-server-ip:9443`
+5. **Access Portainer**:
+- Open `https://your-server-ip:9443`
 - Create admin account on first login
 
 ## Usage
@@ -180,16 +180,16 @@ If you need to perform a complete system restore (e.g., after a server failure o
 
 ### Recovery Steps
 
-#### 1. **Follow Steps 1-4 from the Installation section**
+1. **Follow Steps 1-4 from the Installation section**
 
-#### 2. **List available snapshots**
+2. **List available snapshots**
 ```bash
 docker compose -f ./restic/docker-compose.yml exec restic-backup restic snapshots
 ```
 
 Choose the snapshot you want to restore (usually the most recent one).
 
-#### 3. **Temporarily remove read-only flag from data volume**
+3. **Temporarily remove read-only flag from data volume**
 
 Edit `restic/docker-compose.yml` and remove the `:ro` (read-only) flag from the data volume mount:
 
@@ -208,24 +208,24 @@ docker compose -f ./restic/docker-compose.yml up -d --force-recreate
 
 **Why?** The read-only flag prevents Restic from writing the restored data to the `/data` directory.
 
-#### 4. **Restore all data directly to the data folder**
+4. **Restore all data directly to the data folder**
 ```bash
 docker compose -f ./restic/docker-compose.yml exec restic-backup restic restore <snapshot-id>:/data --target /data
 ```
 
 This restores the entire backup directly to the `/data/` path in the container, which maps to `/root/docker/portainer/data/` on your host.
 
-#### 5. **Restart Portainer and verify**
+5. **Restart Portainer and verify**
 ```bash
 docker compose -f ./portainer/docker-compose.yml up -d --force-recreate
 ```
 
-Access Portainer at `http://your-server-ip:9443` and verify your containers are restored.
+Access Portainer at `https://your-server-ip:9443` and verify your containers are restored.
 
-#### 6. **Restart your application containers**
+6. **Restart your application containers**
 - Go to Portainer UI and start/recreate your containers to ensure they use the restored data
 
-#### 7. **Re-enable read-only flag for security**
+7. **Re-enable read-only flag for security**
 
 Edit `restic/docker-compose.yml` and add back the `:ro` (read-only) flag:
 
