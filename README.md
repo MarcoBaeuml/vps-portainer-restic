@@ -111,8 +111,7 @@ volumes:
 
 The current configuration backs up every hour (`BACKUP_CRON: "0 * * * *"`).
 
-
-Edit the `BACKUP_CRON` variable in `restic/docker-compose.yml` and restart the service:
+You can adjust this schedule by editing the `BACKUP_CRON` variable in `restic/docker-compose.yml` and restarting the service:
 ```bash
 docker compose -f ./restic/docker-compose.yml up -d --force-recreate
 ```
@@ -135,7 +134,7 @@ e5f6g7h8  2025-10-03 14:30:00  server01    auto
 
 ### Step 2: Restore Snapshot to data_restore
 ```bash
-docker compose -f ./restic/docker-compose.yml exec restic-backup restic restore a1b2c3d4 --target /restore
+docker compose -f ./restic/docker-compose.yml exec restic-backup restic restore <snapshot>:/data --target /restore
 ```
 
 This restores the entire `data/` folder structure to `portainer/data_restore/`.
@@ -174,6 +173,38 @@ This allows you to:
 - Access production site on port 80
 - Access restored version on port 8080
 - Compare and verify data before committing to the restore
+
+## Full System Recovery
+
+If you need to perform a complete system restore (e.g., after a server failure or migration to a new VPS), follow these steps:
+
+### Recovery Steps
+
+#### 1. **Follow Steps 1-4 from the Installation section**
+
+#### 2. **List available snapshots**
+```bash
+docker compose -f ./restic/docker-compose.yml exec restic-backup restic snapshots
+```
+
+Choose the snapshot you want to restore (usually the most recent one).
+
+#### 3. **Restore all data directly to the data folder**
+```bash
+docker compose -f ./restic/docker-compose.yml exec restic-backup restic restore <snapshot-id>:/data --target /data
+```
+
+This restores the entire backup directly to the `/data/` path in the container, which maps to `/root/docker/portainer/data/` on your host.
+
+#### 4. **Restart Portainer and verify**
+```bash
+docker compose -f ./portainer/docker-compose.yml up -d --force-recreate
+```
+
+Access Portainer at `http://your-server-ip:9443` and verify your containers are restored.
+
+#### 5. **Restart your application containers**
+- Go to Portainer UI and start/recreate your containers to ensure they use the restored data
 
 
 ## Security Considerations
