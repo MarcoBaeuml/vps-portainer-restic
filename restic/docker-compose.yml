@@ -1,0 +1,32 @@
+services:
+  restic-backup:
+    image: mazzolino/restic
+    container_name: restic-backup
+    restart: unless-stopped
+    environment:
+      RESTIC_REPOSITORY: s3:${S3_ENDPOINT}/${S3_BUCKET}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD}
+      
+      BACKUP_CRON: "* * * * *"
+      BACKUP_PATHS: /data
+      BACKUP_TAG: auto
+      RESTIC_FORGET_ARGS: >-
+        --keep-last 24
+        --keep-daily 7
+        --keep-weekly 4
+        --keep-monthly 12
+        --prune
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
+      
+      POST_COMMANDS_SUCCESS: /scripts/notify.sh success
+      POST_COMMANDS_FAILURE: /scripts/notify.sh failure
+      
+      TZ: Europe/Berlin
+    volumes:
+      - /root/docker/portainer/data:/data:ro
+      - /root/docker/portainer/data_restore:/restore
+      - /root/docker/restic/cache:/root/.cache/restic
+      - /root/docker/restic/notify.sh:/scripts/notify.sh:ro
