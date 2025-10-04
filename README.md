@@ -174,9 +174,9 @@ This allows you to:
 - Access restored version on port 8080
 - Compare and verify data before committing to the restore
 
-## Full System Recovery
+## System Recovery
 
-If you need to perform a complete system restore (e.g., after a server failure or migration to a new VPS), follow these steps:
+If you need to perform a complete or partial system restore (e.g., after a server failure or migration to a new VPS), follow these steps:
 
 ### Recovery Steps
 
@@ -208,12 +208,19 @@ docker compose -f ./restic/docker-compose.yml up -d --force-recreate
 
 **Why?** The read-only flag prevents Restic from writing the restored data to the `/data` directory.
 
-4. **Restore all data directly to the data folder**
+4. **Restore data directly to the data folder**
+
+Full restore:
 ```bash
 docker compose -f ./restic/docker-compose.yml exec restic-backup restic restore <snapshot-id>:/data --target /data
 ```
 
-This restores the entire backup directly to the `/data/` path in the container, which maps to `/root/docker/portainer/data/` on your host.
+Partial restore (specific files/folders):
+```bash
+docker compose -f ./restic/docker-compose.yml exec restic-backup restic restore <snapshot-id>:/data --target /data --include "/data/path/to/files/*"
+```
+
+This restores the backup directly to the `/data/` path in the container, which maps to `/root/docker/portainer/data/` on your host.
 
 5. **Restart Portainer and verify**
 ```bash
