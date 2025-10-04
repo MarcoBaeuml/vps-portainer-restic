@@ -9,7 +9,7 @@ services:
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       RESTIC_PASSWORD: ${RESTIC_PASSWORD}
       
-      BACKUP_CRON: "* * * * *"
+      BACKUP_CRON: "0 * * * *"
       BACKUP_PATHS: /data
       BACKUP_TAG: auto
       RESTIC_FORGET_ARGS: >-
